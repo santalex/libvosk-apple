@@ -23,6 +23,7 @@
 
 ## 🛠️ 本地编译指南 (Local Build)
 
+### macOS 动态库 (`libvosk.dylib`)
 全自动架构探针，支持开箱即用：
 
 ```bash
@@ -37,3 +38,13 @@ ARCH=x86_64 ./build_macos.sh
 ```
 
 编译产物将自动提取至 `dist/macos/${ARCH}/libvosk.dylib` 规范对应架构目录下。
+
+### iOS 静态库与 XCFramework (`libvosk.xcframework`)
+一键物理编译 iOS Device 真机 (`arm64`) 与 Simulator 模拟器 (`arm64` + `x86_64`) 并缝合为标准 `XCFramework`：
+
+```bash
+chmod +x build_ios.sh
+./build_ios.sh
+```
+
+编译产物将自动提取至 `dist/ios/libvosk.xcframework` 规范目录下，可直接在 Xcode 或 Swift Package Manager (SPM) 中拖入使用！
