@@ -2,6 +2,9 @@ name: Build Vosk Apple Binaries & XCFramework
 
 on:
   workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
@@ -10,6 +13,8 @@ jobs:
   build-apple-all:
     name: Build All Vosk Apple Binaries & XCFrameworks
     runs-on: macos-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -46,7 +51,7 @@ jobs:
       # ------------------------------------------------------------------------
       # Upload Artifact 3: iOS XCFramework
       # ------------------------------------------------------------------------
-      - name: Compress & Upload iOS XCFramework
+      - name: Compress iOS XCFramework
         run: |
           cd dist/ios
           zip -r libvosk-ios-xcframework.zip libvosk.xcframework
@@ -60,7 +65,7 @@ jobs:
       # ------------------------------------------------------------------------
       # Upload Artifact 4: Apple All-in-One Super XCFramework (macOS + iOS)
       # ------------------------------------------------------------------------
-      - name: Compress & Upload Apple Super XCFramework
+      - name: Compress Apple Super XCFramework
         run: |
           cd dist/apple
           zip -r libvosk-apple-xcframework.zip libvosk.xcframework
@@ -70,3 +75,22 @@ jobs:
         with:
           name: libvosk-apple-xcframework
           path: dist/apple/libvosk-apple-xcframework.zip
+
+      # ------------------------------------------------------------------------
+      # Automatic GitHub Release Publishing (Triggers only when pushing tags v*)
+      # ------------------------------------------------------------------------
+      - name: Compress macOS dylib archives for Release
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          cd dist/macos/x86_64 && zip -r ../libvosk-macos-x86_64.zip libvosk.dylib && cd ../../..
+          cd dist/macos/arm64 && zip -r ../libvosk-macos-arm64.zip libvosk.dylib && cd ../../..
+
+      - name: Publish GitHub Release Assets
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/macos/libvosk-macos-x86_64.zip
+            dist/macos/libvosk-macos-arm64.zip
+            dist/ios/libvosk-ios-xcframework.zip
+            dist/apple/libvosk-apple-xcframework.zip
