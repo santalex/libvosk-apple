@@ -22,14 +22,17 @@
 
 ## 🛠️ 本地编译指南 (Local Build)
 
-### macOS x86_64 (Intel)
+全自动架构探针，支持开箱即用：
+
 ```bash
-./build_macos_x86_64.sh
+chmod +x build_macos.sh
+
+# 自动根据当前 Mac 物理 CPU 架构 (x86_64 或 arm64) 构建并提取
+./build_macos.sh
+
+# 亦可显式指定交叉编译目标架构：
+ARCH=arm64 ./build_macos.sh
+ARCH=x86_64 ./build_macos.sh
 ```
 
-### macOS arm64 (Apple Silicon)
-```bash
-./build_macos_arm64.sh
-```
-
-编译产物将自动提取至 `dist/macos/` 规范对应架构目录下。
+编译产物将自动提取至 `dist/macos/${ARCH}/libvosk.dylib` 规范对应架构目录下。
