@@ -65,7 +65,7 @@ sed -i '' 's/\*\.dll/*.dll *.dylib/g' Makefile
 
 # 7. 编译指定架构的 libvosk.dylib
 echo "--> 正在编译 macOS ${TARGET_ARCH} 架构动态库 (Accelerate 加速, 剔除调试符号)..."
-KALDI_ROOT=$(pwd)/../../kaldi EXT=dylib make clean || true
+make clean || true
 KALDI_ROOT=$(pwd)/../../kaldi EXT=dylib make -j$(sysctl -n hw.ncpu) \
     HAVE_ACCELERATE=1 \
     HAVE_OPENBLAS_CLAPACK=0 \
