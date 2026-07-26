@@ -1,0 +1,33 @@
+# OS & Editor Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Temporary Clone Directories (Kaldi & Vosk Source Trees)
+kaldi/
+vosk-api/
+
+# Build & Compilation Artifacts
+*.o
+*.a
+*.dylib
+*.so
+*.dll
+*.exe
+*.log
+*.tmp
+build/
+bin/
+obj/
+
+# Exclude all in dist except keep .gitkeep if needed
+# (Uncomment below if dist binaries should be gitignored for Releases-only workflow)
+dist/
