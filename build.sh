@@ -316,7 +316,15 @@ case "$COMMAND" in
             dist/ios/slices/iphonesimulator_x86_64/libvosk.a \
             -output dist/ios/slices/iphonesimulator_universal/libvosk.a
 
-        # 3. Create All-in-One Super XCFramework (macOS Universal + iOS Device + iOS Simulator)
+        # 3. Create Pure iOS XCFramework (iOS Device + iOS Simulator)
+        IOS_XCFRAMEWORK_DIR="dist/ios/libvosk.xcframework"
+        rm -rf "${IOS_XCFRAMEWORK_DIR}"
+        xcodebuild -create-xcframework \
+            -library dist/ios/slices/iphoneos_arm64/libvosk.a -headers vosk-api/src/vosk_api.h \
+            -library dist/ios/slices/iphonesimulator_universal/libvosk.a -headers vosk-api/src/vosk_api.h \
+            -output "${IOS_XCFRAMEWORK_DIR}"
+
+        # 4. Create All-in-One Super XCFramework (macOS Universal + iOS Device + iOS Simulator)
         XCFRAMEWORK_DIR="dist/apple/libvosk.xcframework"
         rm -rf "${XCFRAMEWORK_DIR}"
         xcodebuild -create-xcframework \
