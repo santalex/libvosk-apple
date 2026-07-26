@@ -2,8 +2,10 @@
 set -e
 
 TARGET_ARCH="x86_64"
+ARCH_FLAGS="-arch x86_64"
+HOST_FLAGS="--host=x86_64-apple-darwin"
 
-echo "=== 🚀 开始构建 macOS ${TARGET_ARCH} (Intel) 架构 Vosk 动态库 ==="
+echo "=== 🚀 开始构建 macOS ${TARGET_ARCH} (Intel) 架构 Vosk 全链路动态库 ==="
 echo "--> 目标物理架构: ${TARGET_ARCH}"
 echo "--> 挂载加速框架: Apple Accelerate.framework"
 
@@ -13,16 +15,20 @@ if [ ! -d "kaldi" ]; then
     git clone -b vosk --single-branch --depth=1 https://github.com/alphacep/kaldi
 fi
 
-# 2. 构建 OpenFST 依赖
+# 2. 构建 OpenFST 依赖 (灌入 x86_64 显式架构参数)
 cd kaldi/tools
-echo "--> 正在编译 OpenFST..."
-make -j$(sysctl -n hw.ncpu) openfst
+echo "--> 正在编译 OpenFST (架构: ${TARGET_ARCH})..."
+CXXFLAGS="${ARCH_FLAGS}" CFLAGS="${ARCH_FLAGS}" LDFLAGS="${ARCH_FLAGS}" \
+    make -j$(sysctl -n hw.ncpu) openfst
 
-# 3. 配置 Kaldi 使用苹果 Accelerate.framework (关闭 CUDA)
+# 3. 配置并编译 Kaldi (灌入 x86_64 显式架构与 host 参数)
 cd ../src
-echo "--> 配置 Kaldi 挂载 Accelerate 框架..."
-./configure --shared --use-cuda=no
-make -j$(sysctl -n hw.ncpu) online2 lm rnnlm
+echo "--> 配置并编译 Kaldi (架构: ${TARGET_ARCH}, 关闭 CUDA)..."
+CXXFLAGS="${ARCH_FLAGS}" CFLAGS="${ARCH_FLAGS}" LDFLAGS="${ARCH_FLAGS}" \
+    ./configure --shared --use-cuda=no ${HOST_FLAGS}
+
+CXXFLAGS="${ARCH_FLAGS}" CFLAGS="${ARCH_FLAGS}" LDFLAGS="${ARCH_FLAGS}" \
+    make -j$(sysctl -n hw.ncpu) online2 lm rnnlm
 
 cd ../..
 
@@ -40,7 +46,7 @@ sed -i '' 's/-g -O3/-O3/g' Makefile
 sed -i '' 's/\$(CXX) --shared -s/$(CXX) --shared/g' Makefile
 sed -i '' 's/\*\.dll/*.dll *.dylib/g' Makefile
 
-# 6. 编译 x86_64 架构 libvosk.dylib
+# 6. 编译 x86_64 架构 libvosk.dylib (灌入 x86_64 显式架构参数)
 echo "--> 正在编译 macOS ${TARGET_ARCH} 架构动态库 (Accelerate 加速, 剔除调试符号)..."
 KALDI_ROOT=$(pwd)/../../kaldi EXT=dylib make -j$(sysctl -n hw.ncpu) clean || true
 KALDI_ROOT=$(pwd)/../../kaldi EXT=dylib make -j$(sysctl -n hw.ncpu) \
@@ -48,8 +54,8 @@ KALDI_ROOT=$(pwd)/../../kaldi EXT=dylib make -j$(sysctl -n hw.ncpu) \
     HAVE_OPENBLAS_CLAPACK=0 \
     HAVE_MKL=0 \
     USE_SHARED=0 \
-    EXTRA_CFLAGS="-ffunction-sections -fdata-sections" \
-    EXTRA_LDFLAGS="-Wl,-dead_strip -Wl,-S -Wl,-x"
+    EXTRA_CFLAGS="-ffunction-sections -fdata-sections ${ARCH_FLAGS}" \
+    EXTRA_LDFLAGS="-Wl,-dead_strip -Wl,-S -Wl,-x ${ARCH_FLAGS}"
 
 cd ../..
 
