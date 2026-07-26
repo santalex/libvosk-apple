@@ -15,11 +15,21 @@ if [ ! -d "kaldi" ]; then
     git clone -b vosk --single-branch --depth=1 https://github.com/alphacep/kaldi
 fi
 
-# 2. 构建 OpenFST 依赖 (灌入 x86_64 显式架构参数)
+# 2. 编译 OpenFST 依赖 (直连 Shell 编译，掌控全量流程)
 cd kaldi/tools
-echo "--> 正在编译 OpenFST (架构: ${TARGET_ARCH})..."
-CXXFLAGS="${ARCH_FLAGS}" CFLAGS="${ARCH_FLAGS}" LDFLAGS="${ARCH_FLAGS}" \
-    make -j$(sysctl -n hw.ncpu) openfst
+echo "--> 正在编译并安装 OpenFST..."
+if [ ! -d "openfst-1.8.0" ]; then
+    wget -t 3 -T 30 https://www.openfst.org/twiki/pub/FST/FstDownload/openfst-1.8.0.tar.gz || curl -sSLO https://www.openfst.org/twiki/pub/FST/FstDownload/openfst-1.8.0.tar.gz
+    tar -zxf openfst-1.8.0.tar.gz
+fi
+
+cd openfst-1.8.0
+./configure --prefix=$(pwd) --enable-static --enable-shared --enable-far --enable-ngram-fsts --enable-lookahead-fsts --with-pic \
+    CXXFLAGS="-O3 ${ARCH_FLAGS}" CFLAGS="-O3 ${ARCH_FLAGS}" LDFLAGS="${ARCH_FLAGS}"
+make -j$(sysctl -n hw.ncpu) install
+cd ..
+rm -f openfst
+ln -s openfst-1.8.0 openfst
 
 # 3. 配置并编译 Kaldi (灌入 x86_64 显式架构与 host 参数)
 cd ../src

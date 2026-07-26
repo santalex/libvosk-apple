@@ -15,16 +15,21 @@ if [ ! -d "kaldi" ]; then
     git clone -b vosk --single-branch --depth=1 https://github.com/alphacep/kaldi
 fi
 
-# 2. 构建 OpenFST 依赖 (清除旧 configure 缓存并清洗 x86 -msse 指令)
+# 2. 编译 OpenFST 依赖 (直连 Shell 编译，掌控全量流程)
 cd kaldi/tools
-echo "--> 正在为 ARM64 优化编译 OpenFST..."
-if [ -f Makefile ]; then
-    sed -i '' 's/-msse -msse2//g' Makefile
+echo "--> 正在编译并安装 OpenFST..."
+if [ ! -d "openfst-1.8.0" ]; then
+    wget -t 3 -T 30 https://www.openfst.org/twiki/pub/FST/FstDownload/openfst-1.8.0.tar.gz || curl -sSLO https://www.openfst.org/twiki/pub/FST/FstDownload/openfst-1.8.0.tar.gz
+    tar -zxf openfst-1.8.0.tar.gz
 fi
-rm -f openfst-1.8.0/Makefile || true
-make -j$(sysctl -n hw.ncpu) openfst \
-    OPENFST_CONFIGURE="--host=aarch64-apple-darwin --enable-static --enable-shared --enable-far --enable-ngram-fsts --enable-lookahead-fsts --with-pic" \
-    CXXFLAGS="${ARCH_FLAGS}" CFLAGS="${ARCH_FLAGS}" LDFLAGS="${ARCH_FLAGS}"
+
+cd openfst-1.8.0
+./configure --prefix=$(pwd) --enable-static --enable-shared --enable-far --enable-ngram-fsts --enable-lookahead-fsts --with-pic \
+    CXXFLAGS="-O3 ${ARCH_FLAGS}" CFLAGS="-O3 ${ARCH_FLAGS}" LDFLAGS="${ARCH_FLAGS}"
+make -j$(sysctl -n hw.ncpu) install
+cd ..
+rm -f openfst
+ln -s openfst-1.8.0 openfst
 
 # 3. 配置并编译 Kaldi (灌入 arm64 显式架构，关闭 CUDA，抹掉 x86 指令集干扰)
 cd ../src
