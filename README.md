@@ -1,50 +1,50 @@
-# 🚀 libvosk-apple
+# libvosk-apple
 
-> Ultra-lightweight, **Accelerate.framework**-powered Vosk API binaries (`.dylib` & `XCFramework`) for **macOS** and **iOS**.
-
----
-
-### 💡 道友友情提示与免责声明 (Disclaimer)
-
-1. **专注优雅打包**：本项目旨在于 GitHub Actions 云端及本地提供工业级、超轻量（体积由 ~35MB 极致裁剪至 ~6.8MB）的 macOS (`x86_64` / `arm64` / `Universal`) 及 iOS 预编译二进制库产物。
-2. **测试自理原则**：**贫道只管精炼打包，概不包售后！** 😃 各位道友在将编译产物部署至生产环境或商业 App 前，请自行做好充分的功能性、声学模型兼容性与性能测试。
-3. **开源许可**：本项目基于 **Apache 2.0 License** 免费开源，与 Alpha Cephei 官方无关，特此声明。
+Prebuilt Vosk API binaries (`.dylib` and `XCFramework`) optimized for **macOS** and **iOS** using Apple's native **Accelerate.framework**.
 
 ---
 
-## 🌟 核心特性 (Features)
+## 🌟 Key Features
 
-- **Apple Accelerate Framework**：100% 挂载苹果原生 Accelerate 硬件加速，零 OpenBLAS / MKL 冗余依赖；
-- **极致体积裁剪**：运用 C++ 死代码剥离 (`-Wl,-dead_strip`) 剔除调试符号，体积由 ~35MB 缩减近 80% 至 **~5.8MB**；
-- **纯血跨架构兼容**：清洗 Kaldi 历史硬编码的 `-msse` 包袱（x86_64 物理规范默认包含 SSE2，ARM64 使用原生 NEON，重度矩阵解算 100% 委托给 Accelerate）；
-- **全架构支持**：原生支持 Intel (`x86_64`)、Apple Silicon (`arm64`) 以及 Universal 通用胖动态库与 `XCFramework`。
+- **Apple Accelerate Framework Integration**: 100% native integration with Apple's `Accelerate.framework` (cblas/vDSP), removing external OpenBLAS and MKL dependencies.
+- **Dead Code Stripping**: Binary sizes optimized down to ~5.8 MB via C++ dead code stripping (`-Wl,-dead_strip`).
+- **Clean Cross-Architecture Support**: Stripped legacy `-msse` flags. Fully supports 64-bit Intel (`x86_64`) with default SSE2, ARM64 (`arm64`) with NEON, and universal binaries.
+- **Unified Build System**: Multi-platform build script supporting macOS dynamic libraries and iOS XCFramework static binaries.
 
 ---
 
-## 🛠️ 本地编译指南 (Local Build)
+## 🛠️ Usage & Build Instructions
 
-### macOS 动态库 (`libvosk.dylib`)
-全自动架构探针，支持开箱即用：
+The build process is managed by `build.sh`.
 
 ```bash
-chmod +x build_macos.sh
+chmod +x build.sh
 
-# 自动根据当前 Mac 物理 CPU 架构 (x86_64 或 arm64) 构建并提取
-./build_macos.sh
+# Build macOS dynamic libraries for the current architecture
+./build.sh macos
 
-# 亦可显式指定交叉编译目标架构：
-ARCH=arm64 ./build_macos.sh
-ARCH=x86_64 ./build_macos.sh
+# Cross-compile macOS dynamic libraries for a specific architecture
+ARCH=arm64 ./build.sh macos
+ARCH=x86_64 ./build.sh macos
+ARCH=universal ./build.sh macos
+
+# Build iOS static libraries and bundle into libvosk.xcframework
+./build.sh ios
+
+# Build all targets (macOS + iOS)
+./build.sh all
 ```
 
-编译产物将自动提取至 `dist/macos/${ARCH}/libvosk.dylib` 规范对应架构目录下。
+---
 
-### iOS 静态库与 XCFramework (`libvosk.xcframework`)
-一键物理编译 iOS Device 真机 (`arm64`) 与 Simulator 模拟器 (`arm64` + `x86_64`) 并缝合为标准 `XCFramework`：
+## 📁 Output Paths
 
-```bash
-chmod +x build_ios.sh
-./build_ios.sh
-```
+- **macOS Dynamic Libraries**: `dist/macos/${ARCH}/libvosk.dylib`
+- **iOS XCFramework**: `dist/ios/libvosk.xcframework`
 
-编译产物将自动提取至 `dist/ios/libvosk.xcframework` 规范目录下，可直接在 Xcode 或 Swift Package Manager (SPM) 中拖入使用！
+---
+
+## 📄 License & Disclaimer
+
+- Distributed under the **Apache License 2.0**.
+- This is an unofficial community build project for macOS and iOS integration.
