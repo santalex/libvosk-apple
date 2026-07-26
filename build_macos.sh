@@ -16,7 +16,9 @@ if [ ! -d "kaldi" ]; then
     git clone -b vosk --single-branch --depth=1 https://github.com/alphacep/kaldi
 fi
 
-# 3. 构建 OpenFST 依赖 (使用 Kaldi 自带 make openfst，抹掉 x86 -msse -msse2 指令，灌入架构与 host 参数)
+# 3. 构建 OpenFST 依赖 (使用 Kaldi 自带 make openfst)
+# 说明：自动清洗 Kaldi 历史硬编码的 -msse -msse2 选项。64位 x86_64 规范默认包含 SSE2，ARM64 使用原生 NEON，
+#      且密集矩阵解算已 100% 挂载 Apple Accelerate 硬件加速内核，抹掉硬编码可确保跨架构编译绝对安全。
 cd kaldi/tools
 echo "--> 正在为 ${TARGET_ARCH} 编译 Kaldi 自带 OpenFST..."
 if [ -f Makefile ]; then
@@ -30,13 +32,13 @@ make -j$(sysctl -n hw.ncpu) openfst \
     OPENFST_CONFIGURE="${HOST_FLAGS} --enable-static --enable-shared --enable-far --enable-ngram-fsts --enable-lookahead-fsts --with-pic" \
     CXXFLAGS="-O3 ${ARCH_FLAGS}" CFLAGS="-O3 ${ARCH_FLAGS}" LDFLAGS="${ARCH_FLAGS}"
 
-# 4. 配置并编译 Kaldi (灌入显式架构与 host 参数，关闭 CUDA，擦除 x86 指令集干扰)
+# 4. 配置并编译 Kaldi (灌入显式架构与 host 参数，关闭 CUDA)
 cd ../src
 echo "--> 配置并编译 Kaldi (架构: ${TARGET_ARCH}, 关闭 CUDA)..."
 CXXFLAGS="${ARCH_FLAGS}" CFLAGS="${ARCH_FLAGS}" LDFLAGS="${ARCH_FLAGS}" \
     ./configure --shared --use-cuda=no
 
-# 自动从 Kaldi 配置中抹掉 x86 专有的 -msse -msse2 选项，确保物理兼容
+# 自动清洗 Kaldi 配置文件中生成的 -msse -msse2 选项，确保物理兼容与满血 Accelerate 性能
 if [ -f kaldi.mk ]; then
     sed -i '' 's/-msse -msse2//g' kaldi.mk
 fi

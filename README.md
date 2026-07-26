@@ -15,7 +15,8 @@
 ## 🌟 核心特性 (Features)
 
 - **Apple Accelerate Framework**：100% 挂载苹果原生 Accelerate 硬件加速，零 OpenBLAS / MKL 冗余依赖；
-- **极致体积裁剪**：运用 C++ 死代码剥离 (`-Wl,-dead_strip`) 剔除调试符号，体积缩减近 80%；
+- **极致体积裁剪**：运用 C++ 死代码剥离 (`-Wl,-dead_strip`) 剔除调试符号，体积由 ~35MB 缩减近 80% 至 **~5.8MB**；
+- **纯血跨架构兼容**：清洗 Kaldi 历史硬编码的 `-msse` 包袱（x86_64 物理规范默认包含 SSE2，ARM64 使用原生 NEON，重度矩阵解算 100% 委托给 Accelerate）；
 - **全架构支持**：原生支持 Intel (`x86_64`)、Apple Silicon (`arm64`) 以及 Universal 通用胖动态库与 `XCFramework`。
 
 ---
