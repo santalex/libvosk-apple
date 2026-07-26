@@ -22,6 +22,9 @@ echo "--> 正在为 ${TARGET_ARCH} 编译 Kaldi 自带 OpenFST..."
 if [ -f Makefile ]; then
     sed -i '' 's/-msse -msse2//g' Makefile
 fi
+if [ -d "openfst-1.8.0" ]; then
+    make -C openfst-1.8.0 clean || true
+fi
 rm -f openfst-1.8.0/Makefile || true
 make -j$(sysctl -n hw.ncpu) openfst \
     OPENFST_CONFIGURE="${HOST_FLAGS} --enable-static --enable-shared --enable-far --enable-ngram-fsts --enable-lookahead-fsts --with-pic" \
