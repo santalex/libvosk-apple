@@ -3,6 +3,8 @@ name: Build Vosk Apple Binaries & XCFramework
 on:
   workflow_dispatch:
   push:
+    branches:
+      - master
     tags:
       - 'v*'
 
@@ -31,25 +33,25 @@ jobs:
         run: ./build.sh all
 
       # ------------------------------------------------------------------------
-      # Upload Artifact 1: macOS x86_64 dylib
+      # Artifact 1: macOS x86_64 dylib
       # ------------------------------------------------------------------------
-      - name: Upload macOS x86_64 dylib
+      - name: Upload macOS x86_64 dylib Artifact
         uses: actions/upload-artifact@v4
         with:
           name: libvosk-macos-x86_64
           path: dist/macos/x86_64/libvosk.dylib
 
       # ------------------------------------------------------------------------
-      # Upload Artifact 2: macOS arm64 dylib
+      # Artifact 2: macOS arm64 dylib
       # ------------------------------------------------------------------------
-      - name: Upload macOS arm64 dylib
+      - name: Upload macOS arm64 dylib Artifact
         uses: actions/upload-artifact@v4
         with:
           name: libvosk-macos-arm64
           path: dist/macos/arm64/libvosk.dylib
 
       # ------------------------------------------------------------------------
-      # Upload Artifact 3: iOS XCFramework
+      # Artifact 3: iOS XCFramework
       # ------------------------------------------------------------------------
       - name: Compress iOS XCFramework
         run: |
@@ -63,7 +65,7 @@ jobs:
           path: dist/ios/libvosk-ios-xcframework.zip
 
       # ------------------------------------------------------------------------
-      # Upload Artifact 4: Apple All-in-One Super XCFramework (macOS + iOS)
+      # Artifact 4: Apple All-in-One Super XCFramework (macOS + iOS)
       # ------------------------------------------------------------------------
       - name: Compress Apple Super XCFramework
         run: |
@@ -77,16 +79,41 @@ jobs:
           path: dist/apple/libvosk-apple-xcframework.zip
 
       # ------------------------------------------------------------------------
-      # Automatic GitHub Release Publishing (Triggers only when pushing tags v*)
+      # Prepare Release Assets
       # ------------------------------------------------------------------------
       - name: Compress macOS dylib archives for Release
-        if: startsWith(github.ref, 'refs/tags/')
         run: |
           cd dist/macos/x86_64 && zip -r ../libvosk-macos-x86_64.zip libvosk.dylib && cd ../../..
           cd dist/macos/arm64 && zip -r ../libvosk-macos-arm64.zip libvosk.dylib && cd ../../..
 
-      - name: Publish GitHub Release Assets
-        if: startsWith(github.ref, 'refs/tags/')
+      # ------------------------------------------------------------------------
+      # Master Branch: Rolling "nightly" Release (Auto-deletes old nightly)
+      # ------------------------------------------------------------------------
+      - name: Rolling Master Release (Nightly / Latest)
+        if: github.ref == 'refs/heads/master'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # 自动清理旧的 nightly release 与 tag
+          gh release delete nightly --cleanup-tag -y || true
+          git tag -d nightly 2>/dev/null || true
+          git push origin :refs/tags/nightly 2>/dev/null || true
+
+          # 全自动创建全新的 nightly Rolling Release 挂载附件
+          gh release create nightly \
+            dist/macos/libvosk-macos-x86_64.zip \
+            dist/macos/libvosk-macos-arm64.zip \
+            dist/ios/libvosk-ios-xcframework.zip \
+            dist/apple/libvosk-apple-xcframework.zip \
+            --title "Rolling Master Build (Latest)" \
+            --notes "Automated rolling build from latest master branch." \
+            --prerelease
+
+      # ------------------------------------------------------------------------
+      # Tag Push (v*): Permanent Official Release
+      # ------------------------------------------------------------------------
+      - name: Tag Release (v*)
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           files: |
