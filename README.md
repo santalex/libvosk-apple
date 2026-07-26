@@ -1,27 +1,35 @@
-# libvosk-macos-builder
+# 🚀 libvosk-apple
 
-> 🚀 Ultra-lightweight macOS `libvosk.dylib` builder powered by Apple's **Accelerate.framework** and optimized C++ compilation flags.
+> Ultra-lightweight, **Accelerate.framework**-powered Vosk API binaries (`.dylib` & `XCFramework`) for **macOS** and **iOS**.
 
-## Overview
+---
 
-This repository provides an automated build system for compiling **Vosk API** on macOS. By utilizing Apple's system-native **Accelerate Framework** instead of external OpenBLAS/MKL dependencies, and applying aggressive linker optimization flags (`-dead_strip`), it produces an ultra-small (`~7-8MB`) production-ready `libvosk.dylib`.
+### 💡 道友友情提示与免责声明 (Disclaimer)
 
-## Features
+1. **专注优雅打包**：本项目旨在于 GitHub Actions 云端及本地提供工业级、超轻量（体积由 ~35MB 极致裁剪至 ~6.8MB）的 macOS (`x86_64` / `arm64` / `Universal`) 及 iOS 预编译二进制库产物。
+2. **测试自理原则**：**贫道只管精炼打包，概不包售后！** 😃 各位道友在将编译产物部署至生产环境或商业 App 前，请自行做好充分的功能性、声学模型兼容性与性能测试。
+3. **开源许可**：本项目基于 **Apache 2.0 License** 免费开源，与 Alpha Cephei 官方无关，特此声明。
 
-- **Apple Accelerate Framework**: 100% native hardware-accelerated matrix operations without extra dependencies.
-- **Ultra-Small Binary Size**: Reduced from standard ~35MB down to **~7-8MB**.
-- **Automated Workflow**: One-shot script handling Kaldi, OpenFST, and Vosk API compilation.
-- **Apple Silicon & Intel Ready**: Seamless support for both `x86_64` and `arm64`.
+---
 
-## Quick Start (Local Build)
+## 🌟 核心特性 (Features)
 
+- **Apple Accelerate Framework**：100% 挂载苹果原生 Accelerate 硬件加速，零 OpenBLAS / MKL 冗余依赖；
+- **极致体积裁剪**：运用 C++ 死代码剥离 (`-Wl,-dead_strip`) 剔除调试符号，体积缩减近 80%；
+- **全架构支持**：原生支持 Intel (`x86_64`)、Apple Silicon (`arm64`) 以及 Universal 通用胖动态库与 `XCFramework`。
+
+---
+
+## 🛠️ 本地编译指南 (Local Build)
+
+### macOS x86_64 (Intel)
 ```bash
-chmod +x build_macos.sh
-./build_macos.sh
+./build_macos_x86_64.sh
 ```
 
-The output binary will be generated at `dist/libvosk.dylib`.
+### macOS arm64 (Apple Silicon)
+```bash
+./build_macos_arm64.sh
+```
 
-## Disclaimer
-
-This is an independent, unofficial community build tool for Vosk on macOS, distributed under the terms of the **Apache 2.0 License**. This repository is not affiliated with, sponsored by, or endorsed by Alpha Cephei.
+编译产物将自动提取至 `dist/macos/` 规范对应架构目录下。
