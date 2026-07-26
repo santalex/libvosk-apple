@@ -13,9 +13,12 @@ if [ ! -d "kaldi" ]; then
     git clone -b vosk --single-branch --depth=1 https://github.com/alphacep/kaldi
 fi
 
-# 2. 构建 OpenFST 依赖
+# 2. 构建 OpenFST 依赖 (移除 x86 专有的 -msse -msse2 指令集)
 cd kaldi/tools
-echo "--> 正在编译 OpenFST..."
+echo "--> 正在为 ARM64 优化配置 OpenFST..."
+if [ -f Makefile ]; then
+    sed -i '' 's/-msse -msse2//g' Makefile
+fi
 make -j$(sysctl -n hw.ncpu) openfst
 
 # 3. 配置 Kaldi 使用苹果 Accelerate.framework (关闭 CUDA)
