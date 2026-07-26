@@ -17,7 +17,7 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          brew install autoconf automake libtool
+          brew install autoconf automake libtool sox gcc
           echo "/opt/homebrew/opt/libtool/libexec/gnubin" >> $GITHUB_PATH
 
       - name: Build x86_64 libvosk.dylib
