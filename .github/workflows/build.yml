@@ -30,7 +30,11 @@ jobs:
           echo "/opt/homebrew/opt/libtool/libexec/gnubin" >> $GITHUB_PATH
 
       - name: Build all targets (macOS dylibs & Apple XCFrameworks)
-        run: ./build.sh all
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            export VOSK_TAG="${GITHUB_REF_NAME}"
+          fi
+          ./build.sh all
 
       # ------------------------------------------------------------------------
       # Artifact 1: macOS x86_64 dylib

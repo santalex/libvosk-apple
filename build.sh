@@ -18,6 +18,8 @@ DEPLOYMENT_TARGET_IOS="13.0"
 IPHONEOS_SDK_PATH=$(xcrun --sdk iphoneos --show-sdk-path 2>/dev/null || true)
 IPHONESIMULATOR_SDK_PATH=$(xcrun --sdk iphonesimulator --show-sdk-path 2>/dev/null || true)
 
+VOSK_TAG=${VOSK_TAG:-""}
+
 # ------------------------------------------------------------------------------
 # Dependency Clone Helpers
 # ------------------------------------------------------------------------------
@@ -27,9 +29,20 @@ prepare_dependencies() {
         git clone -b vosk --single-branch --depth=1 https://github.com/alphacep/kaldi
     fi
 
-    if [ ! -d "vosk-api" ]; then
-        echo "--> Cloning Vosk API repository..."
-        git clone https://github.com/alphacep/vosk-api --depth=1
+    if [ -n "$VOSK_TAG" ]; then
+        echo "--> Verifying if tag '${VOSK_TAG}' exists in upstream alphacep/vosk-api..."
+        if ! git ls-remote --tags https://github.com/alphacep/vosk-api.git | grep -q "refs/tags/${VOSK_TAG}$"; then
+            echo "❌ Fatal Error: Tag '${VOSK_TAG}' does NOT exist in upstream alphacep/vosk-api repository!"
+            exit 1
+        fi
+        echo "--> Upstream tag '${VOSK_TAG}' verified! Cloning vosk-api at tag '${VOSK_TAG}'..."
+        rm -rf vosk-api
+        git clone -b "${VOSK_TAG}" --depth=1 https://github.com/alphacep/vosk-api
+    else
+        if [ ! -d "vosk-api" ]; then
+            echo "--> Cloning Vosk API repository (latest master)..."
+            git clone https://github.com/alphacep/vosk-api --depth=1
+        fi
     fi
 
     if [ -f "vosk-api/src/Makefile" ]; then
