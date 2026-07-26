@@ -1,11 +1,6 @@
 name: Build macOS x86_64
 
 on:
-  push:
-    branches: [ master, main ]
-    paths:
-      - '.github/workflows/build-macos-x86.yml'
-      - 'build_macos_x86_64.sh'
   workflow_dispatch:
 
 jobs:

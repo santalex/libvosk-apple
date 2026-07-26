@@ -1,11 +1,6 @@
 name: Build macOS arm64
 
 on:
-  push:
-    branches: [ master, main ]
-    paths:
-      - '.github/workflows/build-macos-arm64.yml'
-      - 'build_macos_arm64.sh'
   workflow_dispatch:
 
 jobs:
