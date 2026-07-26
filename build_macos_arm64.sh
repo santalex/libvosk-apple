@@ -15,9 +15,12 @@ if [ ! -d "kaldi" ]; then
     git clone -b vosk --single-branch --depth=1 https://github.com/alphacep/kaldi
 fi
 
-# 2. 构建 OpenFST 依赖 (清除旧 configure 缓存并在 make 命令行覆盖 OPENFST_CONFIGURE 变量)
+# 2. 构建 OpenFST 依赖 (清除旧 configure 缓存并清洗 x86 -msse 指令)
 cd kaldi/tools
 echo "--> 正在为 ARM64 优化编译 OpenFST..."
+if [ -f Makefile ]; then
+    sed -i '' 's/-msse -msse2//g' Makefile
+fi
 rm -f openfst-1.8.0/Makefile || true
 make -j$(sysctl -n hw.ncpu) openfst \
     OPENFST_CONFIGURE="--host=aarch64-apple-darwin --enable-static --enable-shared --enable-far --enable-ngram-fsts --enable-lookahead-fsts --with-pic" \
