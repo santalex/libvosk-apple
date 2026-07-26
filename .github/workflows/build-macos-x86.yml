@@ -20,6 +20,9 @@ jobs:
       - name: Make build script executable
         run: chmod +x build_macos_x86_64.sh
 
+      - name: Install build dependencies
+        run: brew install autoconf automake libtool
+
       - name: Build x86_64 libvosk.dylib
         run: ./build_macos_x86_64.sh
 
