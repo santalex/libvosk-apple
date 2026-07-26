@@ -86,3 +86,34 @@ jobs:
           name: libvosk-ios-xcframework
           path: dist/ios/libvosk-ios-xcframework.zip
           if-no-files-found: error
+
+  bundle-super-xcframework:
+    name: Bundle All-in-One Super libvosk.xcframework
+    runs-on: macos-latest
+    needs: [build-macos-x86, build-macos-arm64, build-ios]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Make build script executable
+        run: chmod +x build.sh
+
+      - name: Install build dependencies
+        run: |
+          brew install autoconf automake libtool sox gcc
+          echo "/opt/homebrew/opt/libtool/libexec/gnubin" >> $GITHUB_PATH
+
+      - name: Build All-in-One Super XCFramework (macOS + iOS)
+        run: ./build.sh all
+
+      - name: Compress Super XCFramework Artifact
+        run: |
+          cd dist/apple
+          zip -r libvosk-apple-xcframework.zip libvosk.xcframework
+
+      - name: Upload Super XCFramework Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: libvosk-apple-xcframework
+          path: dist/apple/libvosk-apple-xcframework.zip
+          if-no-files-found: error
