@@ -329,7 +329,15 @@ case "$COMMAND" in
             dist/ios/slices/iphonesimulator_x86_64/libvosk.a \
             -output dist/ios/slices/iphonesimulator_universal/libvosk.a
 
-        # 3. Create Pure iOS XCFramework (iOS Device + iOS Simulator)
+        # 3. Create Pure macOS XCFramework (macOS Universal arm64 + x86_64)
+        MACOS_XCFRAMEWORK_DIR="dist/macos/libvosk.xcframework"
+        rm -rf "${MACOS_XCFRAMEWORK_DIR}"
+        xcodebuild -create-xcframework \
+            -library dist/macos/slices/macosx_universal/libvosk.a -headers vosk-api/src/vosk_api.h \
+            -output "${MACOS_XCFRAMEWORK_DIR}"
+        echo "==> Successfully created macOS libvosk.xcframework at ${MACOS_XCFRAMEWORK_DIR}"
+
+        # 4. Create Pure iOS XCFramework (iOS Device + iOS Simulator)
         IOS_XCFRAMEWORK_DIR="dist/ios/libvosk.xcframework"
         rm -rf "${IOS_XCFRAMEWORK_DIR}"
         xcodebuild -create-xcframework \
@@ -337,7 +345,7 @@ case "$COMMAND" in
             -library dist/ios/slices/iphonesimulator_universal/libvosk.a -headers vosk-api/src/vosk_api.h \
             -output "${IOS_XCFRAMEWORK_DIR}"
 
-        # 4. Create All-in-One Super XCFramework (macOS Universal + iOS Device + iOS Simulator)
+        # 5. Create All-in-One Super XCFramework (macOS Universal + iOS Device + iOS Simulator)
         XCFRAMEWORK_DIR="dist/apple/libvosk.xcframework"
         rm -rf "${XCFRAMEWORK_DIR}"
         xcodebuild -create-xcframework \

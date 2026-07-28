@@ -60,7 +60,21 @@ jobs:
           path: dist/macos/arm64/libvosk.dylib
 
       # ------------------------------------------------------------------------
-      # Artifact 3: iOS XCFramework
+      # Artifact 3: macOS XCFramework
+      # ------------------------------------------------------------------------
+      - name: Compress macOS XCFramework
+        run: |
+          cd dist/macos
+          zip -r libvosk-macos-xcframework.zip libvosk.xcframework
+
+      - name: Upload macOS XCFramework Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: libvosk-macos-xcframework
+          path: dist/macos/libvosk-macos-xcframework.zip
+
+      # ------------------------------------------------------------------------
+      # Artifact 4: iOS XCFramework
       # ------------------------------------------------------------------------
       - name: Compress iOS XCFramework
         run: |
@@ -74,7 +88,7 @@ jobs:
           path: dist/ios/libvosk-ios-xcframework.zip
 
       # ------------------------------------------------------------------------
-      # Artifact 4: Apple All-in-One Super XCFramework (macOS + iOS)
+      # Artifact 5: Apple All-in-One Super XCFramework (macOS + iOS)
       # ------------------------------------------------------------------------
       - name: Compress Apple Super XCFramework
         run: |
@@ -107,6 +121,7 @@ jobs:
           files: |
             dist/macos/libvosk-macos-x86_64.zip
             dist/macos/libvosk-macos-arm64.zip
+            dist/macos/libvosk-macos-xcframework.zip
             dist/ios/libvosk-ios-xcframework.zip
             dist/apple/libvosk-apple-xcframework.zip
 
@@ -127,6 +142,7 @@ jobs:
           gh release create nightly \
             dist/macos/libvosk-macos-x86_64.zip \
             dist/macos/libvosk-macos-arm64.zip \
+            dist/macos/libvosk-macos-xcframework.zip \
             dist/ios/libvosk-ios-xcframework.zip \
             dist/apple/libvosk-apple-xcframework.zip \
             --title "Rolling Master Build (Latest)" \
